@@ -6,14 +6,16 @@ import datetime as dt
 from diverging_map import diverge_map
 import matplotlib.font_manager as fm
 from matplotlib.ticker import FixedLocator as FL
+from ml_relation import get_semimajoraxis
 
 # what KOI file to use
 cd = os.path.abspath(os.path.dirname(__file__))
+#%%
 koilist = os.path.join(cd, 'KOI_List.txt')
 
 # are we loading in system locations from a previous file (None if not)
-lcenfile = os.path.join(cd, 'orrery_centers.txt')
-# lcenfile = None
+#lcenfile = os.path.join(cd, 'orrery_centers.txt')
+lcenfile = None
 # if we're not loading a centers file,
 # where do we want to save the one generated (None if don't save)
 # scenfile = os.path.join(cd, 'orrery_centers_2.txt')
@@ -108,14 +110,15 @@ zooms[zooms < 0.] = np.interp(inds[zooms < 0.], inds[zooms > 0.],
 # ===================================== #
 
 # reference time for the Kepler data
-time0 = dt.datetime(2009, 1, 1, 12)
+time0 = dt.datetime(2016, 1, 1, 12)
 
 # the KIC number given to the solar system
 kicsolar = -5
+    
+kics, pds, it0s, radius, iteqs, steff, srad = np.genfromtxt(
+    koilist, unpack=True, usecols=(1, 11, 14, 26, 29, 38, 44), delimiter=',')
 
-# load in the data from the KOI list
-kics, pds, it0s, radius, iteqs, semi = np.genfromtxt(
-    koilist, unpack=True, usecols=(1, 5, 8, 20, 26, 23), delimiter=',')
+semi = get_semimajoraxis(srad,steff,pds)
 
 # grab the KICs with known parameters
 good = (np.isfinite(semi) & np.isfinite(pds) &
@@ -183,7 +186,7 @@ else:
 
         # progress bar
         if (ii % 20) == 0:
-            print 'Placing {0} of {1} planets'.format(ii, nplan)
+            print('Placing {0} of {1} planets'.format(ii, nplan))
 
         # put the solar system at its fixed position if desired
         if multikics[ii] == kicsolar and fixedpos:
@@ -493,7 +496,7 @@ cbar.ax.set_xlabel(clab, color=fontcol, family=fontfam, fontproperties=prop,
 plt.sca(ax)
 
 # upper right credit and labels text offsets
-txtxoffs = {480: 0.2, 720: 0.16, 1080: 0.16}
+txtxoffs = {480: 0.25, 720: 0.2, 1080: 0.2}
 txtyoffs1 = {480: 0.10, 720: 0.08, 1080: 0.08}
 txtyoffs2 = {480: 0.18, 720: 0.144, 1080: 0.144}
 
@@ -503,10 +506,10 @@ txtyoff2 = txtyoffs2[reso]
 
 # put in the credits in the top right
 text = plt.text(1. - txtxoff, 1. - txtyoff1,
-                time0.strftime('Kepler Orrery IV\n%d %b %Y'), color=fontcol,
+                time0.strftime('Kepler Orrery 2017\n%d %b %Y'), color=fontcol,
                 family=fontfam, fontproperties=prop,
                 fontsize=fsz2, zorder=5, transform=ax.transAxes)
-plt.text(1. - txtxoff, 1. - txtyoff2, 'By Ethan Kruse\n@ethan_kruse',
+plt.text(1. - txtxoff, 1. - txtyoff2, 'By Ethan Kruse\nupdated by T. Birnstiel',
          color=fontcol, family=fontfam,
          fontproperties=prop, fontsize=fsz1,
          zorder=5, transform=ax.transAxes)
@@ -557,4 +560,4 @@ if makemovie:
         plt.savefig(os.path.join(outdir, 'fig{0:04d}.png'.format(ii)),
                     facecolor=fig.get_facecolor(), edgecolor='none')
         if not (ii % 10):
-            print '{0} of {1} frames'.format(ii, len(times))
+            print('{0} of {1} frames'.format(ii, len(times)))
