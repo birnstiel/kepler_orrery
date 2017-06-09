@@ -24,10 +24,10 @@ scenfile = None
 # add in the solar system to the plots
 addsolar = True
 # put it at a fixed location? otherwise use posinlist to place it
-fixedpos = False
+fixedpos = True
 # fixed x and y positions (in AU) to place the Solar System
 # if addsolar and fixedpos are True
-ssx = 6.
+ssx = 4.5
 ssy = 1.
 # fraction of the way through the planet list to treat the solar system
 # if fixedpos is False.
